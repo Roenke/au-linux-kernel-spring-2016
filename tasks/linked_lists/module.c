@@ -12,7 +12,7 @@ static void __init test_stack(void)
     LIST_HEAD(data_stack);
     stack_entry_t *tos = NULL;
     const char *tos_data = NULL;
-    const char* test_data[] = { "1", "2", "3", "4" };
+    const char* test_data[] = { "1", "2", "3", "4", "324" };
     long i = 0;
 
     pr_alert("Testing basic stack");
@@ -36,7 +36,39 @@ static void __init test_stack(void)
 
 static void __init print_processes_backwards(void)
 {
-    // TODO
+    LIST_HEAD(data_stack);
+
+    struct task_struct *task = NULL;
+    stack_entry_t *entry = NULL;
+    char *data = NULL;
+    int ret_code = 0;
+
+    for_each_process(task) {
+        data = (char*)kmalloc(sizeof(task->comm), GFP_KERNEL);
+        if(data == NULL) {
+            ret_code = -ENOMEM; break;
+        }
+
+        get_task_comm(data, task);
+        entry = create_stack_entry((void*)data);
+
+        if(entry == NULL) {
+            kfree(data);
+            ret_code = -ENOMEM; break;
+        }
+
+        stack_push(&data_stack, entry);
+    }
+
+    while(!stack_empty(&data_stack)) {
+        entry = stack_pop(&data_stack);
+        data = STACK_ENTRY_DATA(entry, char*);
+        printk(KERN_ALERT "%s\n", data);
+        delete_stack_entry(entry);
+        kfree(data);
+    }
+
+    return ret_code;
 }
 
 static int __init ll_init(void)
