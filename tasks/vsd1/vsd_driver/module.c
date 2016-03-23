@@ -90,8 +90,7 @@ static loff_t vsd_dev_llseek(struct file *filp, loff_t off, int whence)
 
 static long vsd_ioctl_get_size(vsd_ioctl_get_size_arg_t __user *uarg)
 {
-    long result = copy_to_user(&uarg->size, &vsd_dev->buf_size, sizeof(vsd_dev->buf_size));
-    return result;
+    return copy_to_user(&uarg->size, &vsd_dev->buf_size, sizeof(vsd_dev->buf_size));
 }
 
 static long vsd_ioctl_set_size(vsd_ioctl_set_size_arg_t __user *uarg)
@@ -162,9 +161,6 @@ static int vsd_driver_probe(struct platform_device *pdev)
         goto error_get_buf;
     }
     vsd_dev->vbuf = phys_to_virt(vsd_phy_mem_buf_res->start);
-    // TODO compute VSD buffer size using information from
-    // abstract memory resource vsd_phy_mem_buf_res
-
     vsd_dev->buf_size = vsd_phy_mem_buf_res->end - vsd_phy_mem_buf_res->start;
 
     pr_notice(LOG_TAG "VSD dev with MINOR %u"
@@ -183,9 +179,6 @@ error_alloc:
 static int vsd_driver_remove(struct platform_device *dev)
 {
     pr_notice(LOG_TAG "removing device %s\n", dev->name);
-    //TODO vsd_driver module is unloaded here.
-    // so we need to unregister and cleanup
-    // misc_device owned by vsd_driver module
     if (vsd_dev != NULL) {
         misc_deregister(&vsd_dev->mdev);
         kfree(vsd_dev);
@@ -199,20 +192,13 @@ static struct platform_driver vsd_driver = {
     .probe = vsd_driver_probe,
     .remove = vsd_driver_remove,
     .driver = {
-        //TODO set platform_driver name here.
-        // platform_bus matches its devices and drivers using
-        // driver name and device name. platform_bus calls driver probe method
-        // when it finds driver with the same name as new device name.
-        .name = "new-vsd",
+        .name = "au-vsd",
         .owner = THIS_MODULE,
     }
 };
 
 static int __init vsd_driver_init(void)
 {
-    //TODO use platform_driver_register to notify platform_bus
-    //that we have platform_driver (vsd_driver).
-    //Also set proper return code.
     printk(KERN_ALERT "Start\n");
     return platform_driver_register(&vsd_driver);
 }
