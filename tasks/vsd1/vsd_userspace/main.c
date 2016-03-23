@@ -1,7 +1,3 @@
-/*
- * TODO parse command line arguments and call proper
- * VSD_IOCTL_* using C function ioctl (see man ioctl).
- */
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
