@@ -96,9 +96,13 @@ void test_once()
     assert(mutex_unlock(&mutex4) == MUTEX_OK);
 }
 
+
+
 int main(void)
 {
     test_once();
     test_once();
+
+    printf("OK!\n");
     return EXIT_SUCCESS;
 }
